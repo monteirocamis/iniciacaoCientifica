@@ -159,6 +159,8 @@ if (client) {
                 client.println("Temp F:");
                 client.println(tempF); 
                 client.println("<br/>");
+                client.println("<br/>");
+                client.println("<p> with ♥︎ by Camis - 2022 </p>");
              break; 
             }
 
