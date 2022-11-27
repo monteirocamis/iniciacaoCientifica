@@ -5,6 +5,10 @@
 const char* ssid = "..."; // <-- inserir wifi
 const char* password = "..."; // <-- inserir senha wifi
  
+String host     = "api.thingspeak.com"; // Open Weather Map API
+const int httpPort   = 80;
+String uri     = "/update?api_key=5SXNU1Q3CXE33SAD&field1=";
+
 WiFiServer server(80);
  
 
