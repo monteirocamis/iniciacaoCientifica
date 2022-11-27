@@ -1,4 +1,4 @@
- //projeto 36 no thinkercad + wearable femRGB c/ nodemcu
+ //projeto 36 no thinkercad + wearable femRGB c/ nodemcu + youtube thingspeak
 
 #include <ESP8266WiFi.h>
  
@@ -15,6 +15,27 @@ WiFiServer server(80);
 #define sensorPin 0
 float Celsius, Fahrenheit, Kelvin;
 int sensorValue;
+
+void anydata(void) {
+  
+ // int temp = map(analogRead(A0),20,358,-40,125);
+  
+  // Construct our HTTP call
+//   String httpPacket = "GET " + uri + String(temp) + " HTTP/1.1\r\nHost: " + host + "\r\n\r\n";
+//   int length = httpPacket.length();
+  
+  // Send our message length
+//   Serial.print("AT+CIPSEND=");
+//   Serial.println(length);
+//   delay(10); // Wait a little for the ESP to respond if (!Serial.find(">")) return -1;
+
+  // Send our http request
+//   Serial.print(httpPacket);
+//   delay(10); // Wait a little for the ESP to respond
+//   if (!Serial.find("SEND OK\r\n")) return;
+  
+  
+}
 
 void setup() {
     Serial.begin(9600); // inicia serial em 9600
@@ -81,6 +102,6 @@ void loop() {
     Kelvin = (((float(sensorValue) / 1023) * 5) * 100);     // converte para kelvin
     Celsius = Kelvin - 273.15; // converte para Celsius
     Fahrenheit = (Celsius * 1.8) +32; // converte para Fahrenheit
-
+//anydata()
 
 }

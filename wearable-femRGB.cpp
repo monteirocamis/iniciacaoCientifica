@@ -12,7 +12,9 @@ void setup() {
   Serial.begin(115200);
   delay(10);
  
-  pinMode(ledPinr, OUTPUT);
+  pinMode(ledP
+WiFiServer server(80);
+ inr, OUTPUT);
   digitalWrite(ledPinr, LOW);
 
    

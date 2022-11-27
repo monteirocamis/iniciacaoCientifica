@@ -1,16 +1,32 @@
-// Projeto 46 – Baseado no exemplo Arduino Webserver, criado por David A. Mellis e Tom Igoe
-#include <SPI.h>
-#include <Ethernet.h> 
-#include <OneWire.h>
-#include <DallasTemperature.h>
+ //projeto 36 no thinkercad + wearable femRGB c/ nodemcu + youtube thingspeak + projeto 46 web
 
-// Fio de dados é plugado ao pino 3 do Arduino 
-#define ONE_WIRE_BUS 3
+#include <ESP8266WiFi.h>
+ #include <SPI.h>
+//#include <Ethernet.h> 
+#include <OneWire.h>
+//#include <DallasTemperature.h>
+
+const char* ssid = "..."; // <-- inserir wifi
+const char* password = "..."; // <-- inserir senha wifi
+ 
+ // thingspeak
+String host     = "api.thingspeak.com"; // Open Weather Map API
+const int httpPort   = 80;
+String uri     = "/update?api_key=5SXNU1Q3CXE33SAD&field1=";
+
+
+WiFiServer server(80);
+
+#define sensorPin 0
+#define ONE_WIRE_BUS 3// Fio de dados é plugado ao pino 3 do Arduino 
 #define TEMPERATURE_PRECISION 12
 
-float tempC, tempF;
+//float tempC, tempF;
 // Prepara uma instância de OneWire para se comunicar com qualquer dispositivo 1-Wire (não // apenas com CIs de temperatura Maxim/Dallas)
 OneWire oneWire(ONE_WIRE_BUS);
+
+float Celsius, Fahrenheit, Kelvin;
+int sensorValue;
 
 // Passa o endereço da instância oneWire ao Dallas Temperature.
 DallasTemperature sensors(&oneWire);
@@ -27,29 +43,90 @@ byte ip[] = { 192, 168 ,0, 104 };
 Server server(80);
 
 void setup() {
+    Serial.begin(9600); // inicia serial em 9600
+    Serial.println("Inicio....."); // mostra texto no serial
+    delay(10);
 
     // Inicia a ethernet e o servidor
-    Ethernet.begin(mac, ip);
+    // Ethernet.begin(mac, ip);
+    // server.begin();
+
+        
+    // Connect to WiFi network
+    Serial.println();
+    Serial.println();
+    Serial.print("Connecting to ");
+    Serial.println(ssid);
+    
+    WiFi.begin(ssid, password);
+    
+    while (WiFi.status() != WL_CONNECTED) {
+        delay(500);
+        Serial.print(".");
+   
+    }
+    Serial.println("");
+    Serial.println("WiFi connected");
+    
+    // Start the server
     server.begin();
+    Serial.println("Server started");
+    
+    // Print the IP address
+    Serial.print("Use this URL to connect: ");
+    Serial.print("http://");
+    Serial.print(WiFi.localIP());
+    Serial.println("/");
+
+
+
 
     // Inicaliza a biblioteca sensors
-    sensors.begin();
+    //sensors.begin();
 
     // define a resolução
-    sensors.setResolution(insideThermometer, TEMPERATURE_PRECISION); 
-    sensors.setResolution(outsideThermometer, TEMPERATURE_PRECISION);
-}
+   // sensors.setResolution(insideThermometer, TEMPERATURE_PRECISION); 
+   // sensors.setResolution(outsideThermometer, TEMPERATURE_PRECISION);
 
-// função para obter a temperatura de um dispositivo
- void getTemperature(DeviceAddress deviceAddress) {
-    tempC = sensors.getTempC(deviceAddress);
-    tempF = DallasTemperature::toFahrenheit(tempC); 
+ 
 }
-
 void loop() {
-     sensors.requestTemperatures();
 
-// escuta a entrada de clientes 
+  // Check if a client has connected
+  WiFiClient client = server.available();
+  if (!client) {
+    return;
+  }
+
+  // Wait until the client sends some data
+  Serial.println("new client");
+  while(!client.available()){
+    delay(1);
+  }
+
+  // Read the first line of the request
+  String request = client.readStringUntil('\r');
+  Serial.println(request);
+  client.flush();
+
+    GetTemp();  // le e converte a temperatura e imprime os valores
+    Serial.print("Celsius: "); 
+    Serial.println(Celsius);
+    Serial.print("Fahrenheit: ");
+    Serial.println(Fahrenheit); 
+    Serial.println();
+    delay(2000);
+ }
+    void GetTemp() { // criacao da funcao getTemp
+    sensorValue = analogRead(sensorPin); // le o sensor
+    Kelvin = (((float(sensorValue) / 1023) * 5) * 100);     // converte para kelvin
+    Celsius = Kelvin - 273.15; // converte para Celsius
+    Fahrenheit = (Celsius * 1.8) +32; // converte para Fahrenheit
+
+
+     // sensors.requestTemperatures();
+
+// web - entrada clientes
 Client client = server.available(); 
 if (client) {
     // uma solicitação http termina com uma linha em branco 
@@ -66,7 +143,7 @@ if (client) {
                 client.println("<html><head><META HTTP-EQUIV=""refresh""CONTENT=""5"">\n"); 
                 client.println("<title>Arduino Web Server</title></head>"); 
                 client.println("<body>\n");
-                client.println("<h1>Temp Web </h1>"); 
+                client.println("<h1>Arduino Web Server</h1>"); 
                 client.println("<h3>Internal Temperature</h3>");
                 client.println("Temp C:");
                 client.println(tempC);
@@ -82,7 +159,7 @@ if (client) {
                 client.println("Temp F:");
                 client.println(tempF); 
                 client.println("<br/>");
-                 client.println("<br/>");
+                client.println("<br/>");
                 client.println("<p> with ♥︎ by Camis - 2022 </p>");
              break; 
             }
@@ -98,11 +175,10 @@ if (client) {
     }
 }
 
-    // Permite um intervalo de tempo suficiente para que o navegador receba os dados 
+    // intervalo p/ navegador receba os dados 
     delay(10);
-    // Fecha a conexão
+    // fecha conexão
     client.stop();
     } 
 
-
-// abrir o navegador web no IP e a porta exemplo: 192.168.0.104:80
+}
